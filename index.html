@@ -1,1 +1,324 @@
-hello world
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0
+        }
+
+        ul,
+        ol {
+            list-style: none;
+        }
+
+        ul,
+        ol,
+        li,
+        p {
+            padding: 0;
+            margin: 0;
+        }
+
+        .dxtree {
+            font-size: 14px;
+        }
+
+        .dxtree .dxtree-node {
+            padding-left: 24px;
+            background-image: url(32px.png);
+            background-position: -292px -4px;
+            background-repeat: repeat-y;
+        }
+
+        .dxtree .dxtree-node-last {
+            background: 0;
+        }
+
+        .dxtree .dxtree-node[close] ul {
+            display: none;
+        }
+
+        .dxtree p {
+            cursor: pointer;
+            display: inline-block;
+            padding-right: 5px;
+        }
+
+        .dxtree p.disabled {
+            color: #999;
+        }
+
+        .dxtree span {
+            margin-left: 3px;
+        }
+
+        .dxtree .dxtree-icon {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            vertical-align: -5px;
+            background-image: url(32px.png);
+            background-position: -68px -4px;
+            margin-left: -24px;
+        }
+
+        .dxtree input[type="checkbox"] {
+            vertical-align: -2px;
+        }
+
+        .dxtree .dxtree-node[haschild]>p .dxtree-icon {
+
+            background-position: -132px -4px;
+            background-repeat: repeat-y;
+        }
+
+        .dxtree .dxtree-node[haschild][close] p>.dxtree-icon {
+            background-position: -100px -4px;
+        }
+
+        .wrap {
+            margin: 20px;
+        }
+
+        aside {
+            width: 200px;
+            position: absolute;
+        }
+
+        article {
+            padding-left: 220px;
+        }
+    </style>
+    <script src="https://cdn.bootcss.com/marked/0.3.6/marked.min.js"></script>
+    <script>
+        ;
+        (function (global, factory) {
+            if (typeof module === 'object' && typeof module.exports === 'object') {
+                module.exports = factory(global, true)
+            } else {
+                factory(global)
+            }
+        })(typeof window !== 'undefined' ? window : this, function (window, noGlobal) {
+            var document = window.document
+
+            function Element(tagName, props, children) {
+                this.tagName = tagName
+                this.props = props
+                if (children != null) {
+                    if (Array.isArray(children)) {
+                        this.children = children
+                    } else {
+                        this.children = [children]
+                    }
+                }
+            }
+
+            Element.prototype.render = function () {
+
+                var el = document.createElement(this.tagName)
+                var props = this.props
+
+                for (var propName in props) {
+                    var propValue = props[propName]
+                    if (propValue !== false) {
+                        el.setAttribute(propName, propValue)
+                    }
+
+                }
+                var children = this.children || []
+                children.forEach(function (child) {
+                    var childEl = (child instanceof Element) ? child.render() : document.createTextNode(child)
+                    el.appendChild(childEl)
+                })
+
+                this.node = el
+                return el
+            }
+
+            function createElement(tagName, props, children) {
+                return new Element(tagName, props, children)
+            }
+
+
+            function TreeNode(data, node, parent) {
+                // this.props = data
+                this.node = node
+                this.text = data.text
+                this.parent = parent
+                this.id = data.code
+                this.selected = data.selected ? true : false;
+                this.children = []
+
+                this.setSelected = function () {
+                    this.selected = !this.selected
+                }
+            }
+
+            function DxTree(wrap, data) {
+                this.wrap = wrap
+                this.data = data
+                this.treeNodes = {}
+                this.elements = this.createElements(data)
+                this.eventHandle = this.eventHandle.bind(this)
+                this.wrap.addEventListener('click', this.eventHandle)
+                wrap.appendChild(this.elements)
+            }
+
+            DxTree.prototype.selected = function () {
+                var selected = [];
+                for (var key in this.treeNodes) {
+                    var node = this.treeNodes[key];
+                    if (node.state && node.state.selected) {
+                        selected.push({ id: node.id, text: node.text })
+                    }
+                }
+                return selected
+            }
+
+            DxTree.prototype.createElements = function (data, parent) {
+                var nodeList = []
+                var ul = createElement('ul', null).render()
+                for (var i = 0; i < data.length; i++) {
+                    var item = data[i]
+
+                    var p = createElement('p', { 'data-id': item.path }, [
+                        createElement('i', { 'class': 'dxtree-icon' }),
+
+                        createElement('span', null, item.file)
+                    ]).render()
+
+
+                    var li;
+                    if (data.length - 1 === i) {
+                        li = createElement('li', { 'class': 'dxtree-node dxtree-node-last', close: '', haschild: item.children ? '' : false }).render()
+                    } else {
+                        li = createElement('li', { 'class': 'dxtree-node', close: '', haschild: item.children ? '' : false }).render()
+                    }
+                    var treeNode = new TreeNode(item, p, parent ? parent : null)
+                    if (parent) {
+                        parent.children.push(treeNode)
+                    }
+                    this.treeNodes[item.path] = treeNode
+                    li.appendChild(p)
+                    if (item.children) {
+                        var childUl = this.createElements(item.children, treeNode)
+                        li.appendChild(childUl)
+                    }
+
+                    ul.appendChild(li)
+                }
+
+                return ul
+            }
+
+
+            DxTree.prototype.eventHandle = function (e) {
+                // e.preventDefault()
+
+                var tagName = e.target.tagName
+                var id;
+                if (tagName.toLowerCase() === 'span') {
+                    id = e.target.parentNode.getAttribute('data-id')
+                    if (e.target.parentNode.parentNode.hasAttribute('haschild')) {
+                        this.toggleShow(id)
+                    } else {
+                        this.showPage(id)
+                    }
+
+                }
+            }
+
+            DxTree.prototype.toggleShow = function (id) {
+                var treeNode = this.treeNodes[id]
+                var parentNode = treeNode.node.parentNode
+                if (parentNode.hasAttribute('close')) {
+                    parentNode.removeAttribute('close')
+                } else {
+                    parentNode.setAttribute('close', '')
+                }
+            }
+
+            DxTree.prototype.showPage = function (id) {
+                console.log(id)
+                window.location.hash = encodeURI('#' + id)
+            }
+
+
+            DxTree.prototype._getParents = function (treeNode, arr) {
+                if (treeNode.parent !== null) {
+                    this._getParents(treeNode.parent, arr);
+                    arr.push(treeNode.parent)
+                }
+            }
+
+            DxTree.prototype._getChildren = function (treeNode, arr) {
+                if (treeNode.children.length !== 0) {
+                    for (var i = 0; i < treeNode.children.length; i++) {
+                        var child = treeNode.children[i];
+                        arr.push(child);
+                        this._getChildren(child, arr);
+                    }
+                }
+            }
+
+            if (!noGlobal) {
+                window.DxTree = DxTree
+            }
+            return DxTree;
+        })
+
+    </script>
+    <script>
+        function getData(url) {
+            if (!url) {
+                url = '/README.md'
+            }
+            fetch(url)
+                .then(function (response) {
+                    if (response.status >= 200 && response.status < 300) {
+                        return response.text()
+                    } else {
+                        var error = new Error(response.statusText)
+                        error.response = response
+                        throw error
+                    }
+
+                }).then(function (body) {
+                    article.innerHTML = marked(body)
+                }).catch(function (e) {
+                    article.innerHTML = '<h1>404</h1>'
+                })
+        }
+        window.onload = function () {
+            fetch('/dir.json')
+                .then(function (response) {
+                    return response.json()
+                }).then(function (json) {
+                    new DxTree(document.getElementById('sidebar'),json)
+                })
+
+
+            var article = document.getElementById('article')
+            getData(window.location.hash.substring(1))
+        }
+        window.onhashchange = function () {
+            getData(location.hash.substring(1))
+        }
+    </script>
+</head>
+
+<body>
+    <div class="wrap">
+        <aside id="sidebar" class="dxtree"></aside>
+        <article id="article"></article>
+    </div>
+
+</body>
+
+</html>
