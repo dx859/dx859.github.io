@@ -1,5 +1,5 @@
 ## connect()
--------------
+
 React-Redux 提供connect方法，用于从 UI 组件生成容器组件。connect的意思，就是将这两种组件连起来。
 
 ```js
