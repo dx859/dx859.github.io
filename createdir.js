@@ -7,6 +7,8 @@ function md5(str) {
     return hash.update(str).digest('hex')
 }
 
+let tagsmap = new Map()
+let articles = new Map()
 
 function getFiles(dir) {
     let files = fs.readdirSync(dir)
@@ -21,12 +23,27 @@ function getFiles(dir) {
             data.push({ path: pathname.substring(1), file, children })
         } else {
             if (path.extname(pathname) === '.md') {
-                let hash = md5(fs.readFileSync(pathname))
-                data.push({ path: pathname.substring(1)+'?hash='+hash, file: file.substring(0, file.lastIndexOf('.')) })
+                let article = fs.readFileSync(pathname).toString()
+                let tagmatch = article.substring(0, article.indexOf('\n')).match(/<\!\-\-(.+)\-\-\>/)
+                let tags = tagmatch ? tagmatch[1].trim().split(' ') : []
+                articles.set(pathname.substring(1), tags)
+                tags.forEach(tag => tagsmap.set(tag, tagsmap.get(tag) ? tagsmap.get(tag).push(pathname.substring(1)) : [pathname.substring(1)]))
+                let hash = md5(article)
+                data.push({ hash: hash, path: pathname.substring(1), file: file.substring(0, file.lastIndexOf('.')) })
             }
         }
     })
     return data
 }
 
-fs.writeFileSync(path.join(__dirname, 'dir.json'), JSON.stringify(getFiles('.')))
+function strMapToObj(strMap) {
+    let obj = Object.create(null);
+    for (let [k, v] of strMap) {
+        obj[k] = v;
+    }
+    return obj;
+}
+
+let tree = getFiles('.')
+
+fs.writeFileSync(path.join(__dirname, 'dir.json'), JSON.stringify({ articles: strMapToObj(articles), tags: strMapToObj(tagsmap), tree }))
