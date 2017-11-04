@@ -3,7 +3,6 @@
 `nginx -c -t /etc/nginx/nginx.conf`检查配置文件是否正确
 
 
-
 ## nginx 日志类型
 
 包括：error.log access.log
