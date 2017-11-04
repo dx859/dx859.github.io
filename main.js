@@ -211,7 +211,7 @@ function getData(url) {
             }
 
         }).then(function(body) {
-            document.getElementsByTagName('title')[0].innerHTML = url.substring(url.lastIndexOf('/') + 1, url.lastIndexOf('.md'))
+            document.getElementsByTagName('title')[0].innerHTML = decodeURI(url.substring(url.lastIndexOf('/') + 1, url.lastIndexOf('.md')))
             content.innerHTML = marked(body)
         }).catch(function(e) {
             content.innerHTML = '<h1>404</h1>'
@@ -246,8 +246,9 @@ window.onload = function() {
         }
         if (treeNodes[id]) {
             treeNodes[id].node.setAttribute('data-selected', '')
+            tags.innerHTML = articles[id].map(tag => `<li>${tag}</li>`).join('')
         }
-        tags.innerHTML = articles[id].map(tag => `<li>${tag}</li>`).join('')
+
         getData(hash.substring(1))
         return id
     }
