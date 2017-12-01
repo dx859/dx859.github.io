@@ -91,3 +91,28 @@ const mapDispatchToProps = {
   };
 }
 ```
+
+
+
+## redux-thunk
+
+redux-thunk中间件可以运行action返回一个函数，如果是函数的话，thunk会使用dispatch和getState为参数调用函数
+
+```js
+const INCREMENT_COUNTER = 'INCREMENT_COUNTER';
+
+function increment() {
+  return {
+    type: INCREMENT_COUNTER
+  };
+}
+
+function incrementAsync() {
+  return dispatch => {
+    setTimeout(() => {
+      // Yay! Can invoke sync or async actions with `dispatch`
+      dispatch(increment());
+    }, 1000);
+  };
+}
+```
