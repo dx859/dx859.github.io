@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <button id="btn">登陆</button>
+    <button id="btn2">iframe</button>
+    <br>
+    <script>
+    var btn = document.getElementById('btn')
+    var btn2 = document.getElementById('btn2')
+
+    function createLogin() {
+        var div = document.createElement('div')
+        div.innerHTML=`
+            <input type="text" placeholder="用户名"/>
+            <input type="password" placeholder="密码"/>
+            <input type="submit" value="提交"/>
+        `
+        document.body.appendChild(div);
+        return div
+    }
+
+    function createIframe() {
+        var iframe = document.createElement('iframe')
+        iframe.src = './iframe.html'
+        document.body.appendChild(iframe)
+        return iframe
+    }
+
+    function getSingle(fn) {
+        var obj
+        return function() {
+            return obj || (obj=fn.apply(this,arguments));
+        }
+    }
+
+    var createSingleLogin = getSingle(createLogin);
+    var createSingleIframe = getSingle(createIframe)
+    
+    btn.addEventListener('click', createSingleLogin, false)
+    btn2.addEventListener('click', createSingleIframe, false)
+    </script>
+</body>
+</html>

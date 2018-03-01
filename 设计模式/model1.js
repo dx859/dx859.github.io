@@ -1,4 +1,8 @@
+var num = 0
+
 var Model = function (sex, underwear) {
+    num++
+    console.log('我被创建了' +num+ '次')
     this.sex = sex;
     this.underwear = underwear;
 };

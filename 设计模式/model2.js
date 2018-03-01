@@ -1,8 +1,7 @@
-
-
-
-
+var num = 0
 var Model = function (sex) {
+    num++
+    console.log('我被创建了' + num + '次')
     this.sex = sex;
 };
 Model.prototype.takePhoto = function () {
@@ -21,4 +20,3 @@ for (var j = 1; j <= 50; j++) {
     femaleModel.underwear = 'underwear' + j;
     femaleModel.takePhoto();
 };
-//    可以看到，改进之后的代码，只需要两个对象便完成了同样的功能。

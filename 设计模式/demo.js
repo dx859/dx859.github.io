@@ -17,7 +17,10 @@ const createHtml = function() {
   return html
 }
 
-
+content.addEventListener('click', function(e){
+  var num = e.target.getAttribute('data-i')
+  alert('这是第'+num+'条数据')
+}, false)
 
 // wrap.addEventListener
 // content.innerHTML = createHtml(data)
@@ -71,6 +74,7 @@ class ScrollUtil {
     
     this.liPool.forEach((li,i)=> {
       li.style.top = ((num + i)*this.cellHeight) + 'px'
+      li.setAttribute('data-i', i+num)
       li.innerText = this.data[i+num]
     })
   }
